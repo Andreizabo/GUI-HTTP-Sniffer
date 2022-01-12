@@ -35,12 +35,7 @@ class Sniffer:
     def sniff(self, buffer_size=65565):
         try:
             data = self.socket.recvfrom(buffer_size)
-            if os.name == 'nt':
-                return data
-            elif os.name == 'posix':
-                return data[0], (data[1], None)
-            else:
-                return None
+            return data
         except AttributeError as err:
             utils.print_err(f'{err}\nSocket was not initialized')
             exit()
