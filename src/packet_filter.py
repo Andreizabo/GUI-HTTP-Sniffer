@@ -1,6 +1,32 @@
 
 class PacketFilter:
+    """
+    A class for filtering packets.
+
+    Attributes:
+        allowed_ports   -- if not empty, only packets coming from/to ports in this array will be allowed
+        blocked_ports   -- if not empty, all packets coming from/to ports in this array will be blocked
+        allowed_ips     -- if not empty, only packets coming from/to IPs in this array will be allowed
+        blocked_ips     -- if not empty, all packets coming from/to IPs in this array will be blocked
+        ipv4_only       -- if set, only IPV4 packets will be allowed
+        ipv6_only       -- if set, only IPV6 packets will be allowed
+
+    Methods:
+        modify()    -- Modifies the settings of the filter
+        verify()    -- Verifies if sent headers follow the rules set up in the filter
+    """
     def __init__(self, allowed_ports=None, blocked_ports=None, allowed_ips=None, blocked_ips=None, ipv4_only=False, ipv6_only=False):
+        """
+        Initializes the filter with default values.
+
+        Keyword arguments:
+            allowed_ports   -- if not empty, only packets coming from/to ports in this array will be allowed (default - None)
+            blocked_ports   -- if not empty, all packets coming from/to ports in this array will be blocked (default - None)
+            allowed_ips     -- if not empty, only packets coming from/to IPs in this array will be allowed (default - None)
+            blocked_ips     -- if not empty, all packets coming from/to IPs in this array will be blocked (default - None)
+            ipv4_only       -- if set, only IPV4 packets will be allowed (default - None)
+            ipv6_only       -- if set, only IPV6 packets will be allowed (default - None)
+        """
         self.allowed_ports = allowed_ports
         self.blocked_ports = blocked_ports
         self.allowed_ips = allowed_ips
@@ -9,6 +35,17 @@ class PacketFilter:
         self.ipv6_only = ipv6_only
 
     def modify(self, allowed_ports=None, blocked_ports=None, allowed_ips=None, blocked_ips=None, ipv4_only=False, ipv6_only=False):
+        """
+        Modifies the settings of the filter.
+
+        Keyword arguments:
+            allowed_ports   -- if not empty, only packets coming from/to ports in this array will be allowed (default - None)
+            blocked_ports   -- if not empty, all packets coming from/to ports in this array will be blocked (default - None)
+            allowed_ips     -- if not empty, only packets coming from/to IPs in this array will be allowed (default - None)
+            blocked_ips     -- if not empty, all packets coming from/to IPs in this array will be blocked (default - None)
+            ipv4_only       -- if set, only IPV4 packets will be allowed (default - None)
+            ipv6_only       -- if set, only IPV6 packets will be allowed (default - None)
+        """
         self.allowed_ports = allowed_ports
         self.blocked_ports = blocked_ports
         self.allowed_ips = allowed_ips
@@ -17,6 +54,17 @@ class PacketFilter:
         self.ipv6_only = ipv6_only
 
     def verify(self, iph, tcp):
+        """
+        Verifies if sent headers follow the rules set up in the filter.
+
+        Keyword arguments:
+            iph -- the IP_header
+            tcp -- the TCP_header
+
+        Returns:
+            True    -- if all the rules are satisfied
+            False   -- if any of the rules is not satisfied
+        """
         if self.ipv4_only and iph['ip_version'] != 4:
             return False
         if self.ipv6_only and iph['ip_version'] != 6:

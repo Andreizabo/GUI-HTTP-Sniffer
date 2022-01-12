@@ -6,7 +6,33 @@ import os
 
 
 class GUI:
+    """
+    The GUI class. This class implements the entire visual interface of the http sniffer, but also handles
+    the main loop of the program.
+
+    Attributes:
+        sniffer_thread  -- the thread that is currently sniffing
+        filter          -- the packet filter that can be modified in the interface
+        packets         -- the array of the currently caught packets
+        colors          -- a dictionary of colors used in the visual interface
+        widgets         -- the dictionary that holds all the widgets
+        window          -- the main window
+
+    Methods:
+        start()             -- starts the program with GUI. Also initializes the filter
+        init_colors()       -- initializes the color dictionary
+        window_setup()      -- sets options for the main window and creates its subdivisions and widgets
+        add_control()       -- creates the control part of the window, containing all the buttons to manipulate the flow of the sniffing
+        add_ip_whitelist()  -- creates the subdivision and window to modify the whitelist of IPs
+        add_ip_blacklist()  -- creates the subdivision and window to modify the blacklist of IPs
+        add_port_whitelist()-- creates the subdivision and window to modify the whitelist of ports
+        add_port_blacklist()-- creates the subdivision and window to modify the blacklist of ports
+        add_list()          -- creates the list part of the window, where the packets will be shown
+        add_preview()       -- creates the preview part of the window, where a whole packet can be viewed
+        update_preview()    -- modifies the data in the preview part of the window
+    """
     def __init__(self):
+        """Initializes the sniffer thread, filter, colors, widgets and window, and then starts building the window."""
         # Sniffer Thread
         self.sniffer_thread = None
         # Filter
@@ -22,10 +48,12 @@ class GUI:
         self.window_setup()
 
     def start(self):
+        """Initializes the filter with default values and then starts the program with GUI."""
         gf.set_filter(self)
         self.window.mainloop()
 
     def init_colors(self):
+        """Initializes the color dictionary with preset values to be used throughout the interface."""
         self.colors = {
             'll_main': '#bfcfd9',
             'l_main': '#aec6d4',
@@ -33,6 +61,10 @@ class GUI:
         }
 
     def window_setup(self):
+        """
+        Sets up the window, with options specific to the OS, and then starts building its subdivisions.
+        First, the control part will be built, then the list part and last the preview part.
+        """
         self.window.title(string='Http Sniffer')
         if os.name == 'nt':
             self.window.geometry('980x500')
@@ -44,6 +76,20 @@ class GUI:
         self.add_preview()
 
     def add_control(self):
+        """
+        Creates the control part of the window.
+        This is a 8x2 grid of widgets, containing:
+            `start`         -- and button that starts the sniffer
+            `stop`          -- the button that stops the sniffer
+            `clear`         -- the button that clears the captured packets list
+            `save`          -- the button that opens a dialog to save the captured packets to the desired file
+            `ip version`    -- the dropdown that allows filtering of IPV4 and IPV6 packets
+            `ip whitelist`  -- the editable view of allowed IPs
+            `ip blacklist`  -- the editable view of blocked IPs
+            `port whitelist`-- the editable view of allowed ports
+            `port blacklist`-- the editable view of blocked ports
+            `exit`          -- the button that safely exits the program
+        """
         self.widgets['control'] = {}
         self.widgets['control']['frame'] = tk.Frame(self.window, bg=self.colors['ll_main'])
         self.widgets['control']['buttons'] = {}
@@ -105,6 +151,15 @@ class GUI:
         self.widgets['control']['frame'].grid(column=0, row=0, padx=3, ipadx=3, pady=5)
 
     def add_ip_whitelist(self):
+        """
+        Creates the IP whitelist editable view.
+        It is composed of:
+            the label and `modify` button   -- the initially visible part, pressing the button will
+                                               open a window with the other parts
+            the ip whitelist window         -- contains a list of the IPs currently whitelisted, an editable
+                                               textbox to specify a new IP to be added to the list and
+                                               three buttons, `add`, `delete` and `done`
+        """
         self.widgets['control']['ip_whitelist'] = {}
 
         # Label
@@ -158,8 +213,7 @@ class GUI:
             self.widgets['control']['ip_whitelist']['frame'], text="Delete IP")
         self.widgets['control']['ip_whitelist']['ip_whitelist_del'].grid(column=2, row=1, padx=10, pady=10)
         self.widgets['control']['ip_whitelist']['ip_whitelist_del'].config(
-            command=partial(gf.del_from_list, self.widgets['control']['ip_whitelist']['ip_whitelist_list'],
-                            self.widgets['control']['ip_whitelist']['ip_whitelist_list']))
+            command=partial(gf.del_from_list, self.widgets['control']['ip_whitelist']['ip_whitelist_list']))
 
         # Exit window
         self.widgets['control']['ip_whitelist']['ip_whitelist_dn'] = tk.Button(
@@ -178,6 +232,15 @@ class GUI:
             command=self.widgets['control']['ip_whitelist']['ip_whitelist_list'].yview)
 
     def add_ip_blacklist(self):
+        """
+        Creates the IP blacklist editable view.
+        It is composed of:
+            the label and `modify` button   -- the initially visible part, pressing the button will
+                                               open a window with the other parts
+            the ip blacklist window         -- contains a list of the IPs currently blacklisted, an editable
+                                               textbox to specify a new IP to be added to the list and
+                                               three buttons, `add`, `delete` and `done`
+        """
         self.widgets['control']['ip_blacklist'] = {}
 
         # Label
@@ -230,8 +293,7 @@ class GUI:
             self.widgets['control']['ip_blacklist']['frame'], text="Delete IP")
         self.widgets['control']['ip_blacklist']['ip_blacklist_del'].grid(column=2, row=1, padx=10, pady=10)
         self.widgets['control']['ip_blacklist']['ip_blacklist_del'].config(
-            command=partial(gf.del_from_list, self.widgets['control']['ip_blacklist']['ip_blacklist_list'],
-                            self.widgets['control']['ip_blacklist']['ip_blacklist_list']))
+            command=partial(gf.del_from_list, self.widgets['control']['ip_blacklist']['ip_blacklist_list']))
 
         # Exit window
         self.widgets['control']['ip_blacklist']['ip_blacklist_dn'] = tk.Button(
@@ -250,6 +312,15 @@ class GUI:
             command=self.widgets['control']['ip_blacklist']['ip_blacklist_list'].yview)
 
     def add_port_whitelist(self):
+        """
+        Creates the port whitelist editable view.
+        It is composed of:
+            the label and `modify` button   -- the initially visible part, pressing the button will
+                                               open a window with the other parts
+            the ip whitelist window         -- contains a list of the ports currently whitelisted, an editable
+                                               textbox to specify a new port to be added to the list and
+                                               three buttons, `add`, `delete` and `done`
+        """
         self.widgets['control']['port_whitelist'] = {}
 
         # Label
@@ -289,6 +360,8 @@ class GUI:
         self.widgets['control']['port_whitelist']['port_whitelist_list'] = tk.Listbox(
             self.widgets['control']['port_whitelist']['port_whitelist_list_frame'], width=25)
         self.widgets['control']['port_whitelist']['port_whitelist_list'].pack(side=tk.LEFT, fill=tk.BOTH)
+        self.widgets['control']['port_whitelist']['port_whitelist_list'].insert(0, '80')
+        self.widgets['control']['port_whitelist']['port_whitelist_list'].insert(0, '443')
 
         # Add new port button
         self.widgets['control']['port_whitelist']['port_whitelist_add'] = tk.Button(
@@ -303,8 +376,7 @@ class GUI:
             self.widgets['control']['port_whitelist']['frame'], text="Delete port")
         self.widgets['control']['port_whitelist']['port_whitelist_del'].grid(column=2, row=1, padx=10, pady=10)
         self.widgets['control']['port_whitelist']['port_whitelist_del'].config(
-            command=partial(gf.del_from_list, self.widgets['control']['port_whitelist']['port_whitelist_list'],
-                            self.widgets['control']['port_whitelist']['port_whitelist_list']))
+            command=partial(gf.del_from_list, self.widgets['control']['port_whitelist']['port_whitelist_list']))
 
         # Exit window
         self.widgets['control']['port_whitelist']['port_whitelist_dn'] = tk.Button(
@@ -323,6 +395,15 @@ class GUI:
             command=self.widgets['control']['port_whitelist']['port_whitelist_list'].yview)
 
     def add_port_blacklist(self):
+        """
+        Creates the port blacklist editable view.
+        It is composed of:
+            the label and `modify` button   -- the initially visible part, pressing the button will
+                                               open a window with the other parts
+            the ip blacklist window         -- contains a list of the ports currently blacklisted, an editable
+                                               textbox to specify a new port to be added to the list and
+                                               three buttons, `add`, `delete` and `done`
+        """
         self.widgets['control']['port_blacklist'] = {}
 
         # Label
@@ -376,8 +457,7 @@ class GUI:
             self.widgets['control']['port_blacklist']['frame'], text="Delete port")
         self.widgets['control']['port_blacklist']['port_blacklist_del'].grid(column=2, row=1, padx=10, pady=10)
         self.widgets['control']['port_blacklist']['port_blacklist_del'].config(
-            command=partial(gf.del_from_list, self.widgets['control']['port_blacklist']['port_blacklist_list'],
-                            self.widgets['control']['port_blacklist']['port_blacklist_list']))
+            command=partial(gf.del_from_list, self.widgets['control']['port_blacklist']['port_blacklist_list']))
 
         # Exit window
         self.widgets['control']['port_blacklist']['port_blacklist_dn'] = tk.Button(
@@ -396,6 +476,10 @@ class GUI:
             command=self.widgets['control']['port_blacklist']['port_blacklist_list'].yview)
 
     def add_list(self):
+        """
+        Creates the list part of the window. Here a preview of each captured packet will be listed.
+        The list also features a scrollbar, so any packets which do not fit on the screen will be easily available.
+        """
         self.widgets['packet_list'] = {}
         self.widgets['packet_list']['frame'] = tk.Frame(self.window, bg='#fcba03')
         self.widgets['packet_list']['list'] = tk.Listbox(self.widgets['packet_list']['frame'], width=90, height=23)
@@ -410,6 +494,10 @@ class GUI:
         self.widgets['packet_list']['frame'].grid(column=0, row=1, padx=10, pady=10)
 
     def add_preview(self):
+        """
+        Creates the preview part of the window. Here a detailed preview of the selected packet will be shown.
+        The preview features both a horizontal and a vertical scrollbar, for ease of view.
+        """
         self.widgets['preview'] = {}
         self.widgets['preview']['frame'] = tk.Frame(self.window, bg=self.colors['ll_main'])
         self.widgets['preview']['json'] = tk.Text(self.widgets['preview']['frame'], bg=self.colors['l_main'], width=47,
@@ -434,6 +522,13 @@ class GUI:
         self.widgets['preview']['frame'].grid(column=1, row=0, rowspan=2)
 
     def update_preview(self, item):
+        """
+        Updates the preview part of the window with a new packet.
+        It will be formatted as a json with indentation of 2 spaces.
+
+        Keyword arguments:
+            item    -- The new packet that should be previewed.
+        """
         self.widgets['preview']['json'].config(state='normal')
         self.widgets['preview']['json'].delete(1.0, tk.END)
         self.widgets['preview']['json'].insert(1.0, json.dumps(item, indent=2))
