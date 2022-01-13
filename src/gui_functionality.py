@@ -111,7 +111,10 @@ def del_from_list(lst):
         Keyword arguments:
             lst     -- the list from which the item will be deleted
         """
-    lst.delete(lst.curselection()[0])
+    try:
+        lst.delete(lst.curselection()[0])
+    except IndexError:
+        pass
 
 
 def start_sniffing(instance):
