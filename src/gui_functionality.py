@@ -4,6 +4,7 @@ import sniffer
 import packet_unpacker
 import packet_filter
 import json
+import os
 
 
 def set_filter(instance):
@@ -132,7 +133,7 @@ def start_sniffing(instance):
     try:
         while not instance.STOP:
             packet, _ = the_sniffer.sniff()
-            eth, iph, tcp, http = packet_unpacker.unpack(packet)
+            eth, iph, tcp, http, guess = packet_unpacker.unpack(packet)
             if iph is not None and tcp is not None:
                 if instance.filter.verify(iph, tcp):
                     add_packet_to_list(instance, {
@@ -140,6 +141,10 @@ def start_sniffing(instance):
                         'Ip_header': iph,
                         'Tcp_header': tcp,
                         'Http_header': http,
+                        'Guessed_protocol': {
+                            'guess': guess[0],
+                            'certainty': guess[1]
+                        }
                     })
     except KeyboardInterrupt:
         pass
@@ -158,9 +163,35 @@ def add_packet_to_list(instance, packet):
         packet      -- the packet to be added to the list
     """
     instance.packets.insert(0, packet)
-    instance.widgets['packet_list']['list'].insert(0, f'{packet["Ip_header"]["source_addr"]}:{packet["Tcp_header"]["source_port"]}'
-                                                      f' --> '
-                                                      f'{packet["Ip_header"]["destination_addr"]}:{packet["Tcp_header"]["destination_port"]}')
+    instance.widgets['packet_list']['list'].insert(0, f'{align_ip(packet["Ip_header"]["source_addr"], packet["Ip_header"]["ip_version"])}'
+                                                      f'  :  {align_port(packet["Tcp_header"]["source_port"])}'
+                                                      f'{"   " if os.name == "nt" else " "}---->   '
+                                                      f'{align_ip(packet["Ip_header"]["destination_addr"], packet["Ip_header"]["ip_version"])}'
+                                                      f'  :  {align_port(packet["Tcp_header"]["destination_port"])}'
+                                                      f'    ({align_protocol(packet["Guessed_protocol"]["guess"])}  --  {packet["Guessed_protocol"]["certainty"]})')
+
+
+def align_ip(ip, ipv):
+    """Aligns an IP to a pre-established max length"""
+    max_ip_len = 0
+    if ipv == 4:
+        max_ip_len = 15
+    elif ipv == 6:
+        max_ip_len = 45
+    return ip + (' ' * (max_ip_len - len(ip)) * 2)
+
+
+def align_port(port):
+    """Aligns a port to a pre-established max length"""
+    max_port_len = 11
+    port = str(port)
+    return port + (' ' * (max_port_len - len(port)) * 2)
+
+
+def align_protocol(protocol):
+    """Aligns a protocol to a pre-established max length"""
+    max_protocol_len = 5
+    return protocol + (' ' * (max_protocol_len - len(protocol)) * 2)
 
 
 def modify_json(instance, event):

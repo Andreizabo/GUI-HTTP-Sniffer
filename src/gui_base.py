@@ -494,14 +494,18 @@ class GUI:
         The list also features a scrollbar, so any packets which do not fit on the screen will be easily available.
         """
         self.widgets['packet_list'] = {}
-        self.widgets['packet_list']['frame'] = tk.Frame(self.window, bg='#fcba03')
-        self.widgets['packet_list']['list'] = tk.Listbox(self.widgets['packet_list']['frame'], width=90, height=23)
+        self.widgets['packet_list']['frame'] = tk.Frame(self.window)
+        self.widgets['packet_list']['list'] = tk.Listbox(self.widgets['packet_list']['frame'], width=76, height=22)
+        self.widgets['packet_list']['header'] = tk.Label(self.widgets['packet_list']['frame'], width=76, height=1, bg=self.colors['ll_main'], anchor='w')
         if os.name == 'posix':
             self.widgets['packet_list']['list'].config(width=84)
-        self.widgets['packet_list']['list'].pack(side=tk.LEFT, fill=tk.BOTH)
+            self.widgets['packet_list']['header'].config(width=84)
+        self.widgets['packet_list']['header'].grid(row=0, column=0, sticky='ew')
+        self.widgets['packet_list']['list'].grid(row=1, column=0, sticky='nsew')
         self.widgets['packet_list']['list'].bind('<Double-Button>', partial(gf.modify_json, self))
+        self.add_column_titles()
         self.widgets['packet_list']['scrollbar'] = tk.Scrollbar(self.widgets['packet_list']['frame'])
-        self.widgets['packet_list']['scrollbar'].pack(side=tk.RIGHT, fill=tk.BOTH)
+        self.widgets['packet_list']['scrollbar'].grid(row=1, column=1, sticky='nse')
         self.widgets['packet_list']['list'].config(yscrollcommand=self.widgets['packet_list']['scrollbar'].set)
         self.widgets['packet_list']['scrollbar'].config(command=self.widgets['packet_list']['list'].yview)
         self.widgets['packet_list']['frame'].grid(column=0, row=1, padx=10, pady=10)
@@ -551,3 +555,10 @@ class GUI:
         """Safely closes the program, closing both the sniffer and the GUI."""
         self.STOP = True
         self.window.destroy()
+
+    def add_column_titles(self):
+        """Sets the titles for the columns"""
+        self.widgets['packet_list']['header'].config(text=f'{gf.align_ip("Source IP", 4)} |  {gf.align_port("Source port")}'
+                                                          f'       |       '
+                                                          f'{gf.align_ip("Dest IP", 4)}  |  {gf.align_port("Dest port")}'
+                                                          f'   |  {gf.align_protocol("Guess")}      |   Certainty')
