@@ -548,5 +548,6 @@ class GUI:
         self.widgets['preview']['json'].config(state='disabled')
 
     def safe_close(self):
+        """Safely closes the program, closing both the sniffer and the GUI."""
         self.STOP = True
         self.window.destroy()
