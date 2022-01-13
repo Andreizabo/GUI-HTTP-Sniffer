@@ -172,4 +172,7 @@ def modify_json(instance, event):
         instance    -- the GUI instance
         event       -- the double click event. it is used to have access to the list widget and the selected item
     """
-    instance.update_preview(instance.packets[event.widget.curselection()[0]])
+    try:
+        instance.update_preview(instance.packets[event.widget.curselection()[0]])
+    except IndexError:
+        pass
