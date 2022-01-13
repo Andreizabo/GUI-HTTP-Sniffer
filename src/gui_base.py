@@ -31,6 +31,7 @@ class GUI:
         add_preview()       -- creates the preview part of the window, where a whole packet can be viewed
         update_preview()    -- modifies the data in the preview part of the window
     """
+
     def __init__(self):
         """Initializes the sniffer thread, filter, colors, widgets and window, and then starts building the window."""
         # Sniffer Thread
@@ -109,14 +110,18 @@ class GUI:
         # Save list
         self.widgets['control']['buttons']['save_dialog'] = tk.Toplevel(self.widgets['control']['frame'],
                                                                         bg=self.colors['l_main'])
+        self.widgets['control']['buttons']['save_dialog'].resizable(False, False)
         self.widgets['control']['buttons']['save_dialog'].title('Save data')
         self.widgets['control']['buttons']['save_dialog'].withdraw()
+        self.widgets['control']['buttons']['save_dialog'].protocol("WM_DELETE_WINDOW",
+                                                                   lambda: self.widgets['control']['buttons'][
+                                                                       'save_dialog'].withdraw())
         self.widgets['control']['buttons']['save_dialog_label'] = tk.Label(
             self.widgets['control']['buttons']['save_dialog'],
             text='Enter the name of the file:', bg=self.colors['ll_main'])
         self.widgets['control']['buttons']['save_dialog_label'].pack(padx=10, pady=10)
         self.widgets['control']['buttons']['save_dialog_text'] = tk.Text(
-            self.widgets['control']['buttons']['save_dialog'], width=21, height=1)
+            self.widgets['control']['buttons']['save_dialog'], width=25, height=1)
         self.widgets['control']['buttons']['save_dialog_text'].pack(padx=10, pady=10)
         self.widgets['control']['buttons']['save_dialog_btn'] = tk.Button(
             self.widgets['control']['buttons']['save_dialog'],
@@ -178,6 +183,7 @@ class GUI:
         # New window
         self.widgets['control']['ip_whitelist']['frame'] = tk.Toplevel(self.widgets['control']['frame'],
                                                                        bg=self.colors['l_main'])
+        self.widgets['control']['ip_whitelist']['frame'].resizable(False, False)
         self.widgets['control']['ip_whitelist']['frame'].title('IP whitelist')
         self.widgets['control']['ip_whitelist']['frame'].withdraw()
         self.widgets['control']['ip_whitelist']['frame'].protocol("WM_DELETE_WINDOW",
@@ -259,6 +265,7 @@ class GUI:
         # New window
         self.widgets['control']['ip_blacklist']['frame'] = tk.Toplevel(self.widgets['control']['frame'],
                                                                        bg=self.colors['l_main'])
+        self.widgets['control']['ip_blacklist']['frame'].resizable(False, False)
         self.widgets['control']['ip_blacklist']['frame'].title('IP blacklist')
         self.widgets['control']['ip_blacklist']['frame'].withdraw()
         self.widgets['control']['ip_blacklist']['frame'].protocol("WM_DELETE_WINDOW",
@@ -339,11 +346,12 @@ class GUI:
         # New window
         self.widgets['control']['port_whitelist']['frame'] = tk.Toplevel(self.widgets['control']['frame'],
                                                                          bg=self.colors['l_main'])
+        self.widgets['control']['port_whitelist']['frame'].resizable(False, False)
         self.widgets['control']['port_whitelist']['frame'].title('Port whitelist')
         self.widgets['control']['port_whitelist']['frame'].withdraw()
         self.widgets['control']['port_whitelist']['frame'].protocol("WM_DELETE_WINDOW",
-                                                                  lambda: self.widgets['control']['port_whitelist'][
-                                                                      'frame'].withdraw())
+                                                                    lambda: self.widgets['control']['port_whitelist'][
+                                                                        'frame'].withdraw())
 
         # Text box for new ports
         self.widgets['control']['port_whitelist']['new_port_whitelist'] = tk.Text(
@@ -422,11 +430,12 @@ class GUI:
         # New window
         self.widgets['control']['port_blacklist']['frame'] = tk.Toplevel(self.widgets['control']['frame'],
                                                                          bg=self.colors['l_main'])
+        self.widgets['control']['port_blacklist']['frame'].resizable(False, False)
         self.widgets['control']['port_blacklist']['frame'].title('Port blacklist')
         self.widgets['control']['port_blacklist']['frame'].withdraw()
         self.widgets['control']['port_blacklist']['frame'].protocol("WM_DELETE_WINDOW",
-                                                                  lambda: self.widgets['control']['port_blacklist'][
-                                                                      'frame'].withdraw())
+                                                                    lambda: self.widgets['control']['port_blacklist'][
+                                                                        'frame'].withdraw())
 
         # Text box for new ports
         self.widgets['control']['port_blacklist']['new_port_blacklist'] = tk.Text(
