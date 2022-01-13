@@ -9,6 +9,17 @@ except ImportError:
 
 
 def parse_http(packet_data, https=False):
+    """
+    Tries to parse a http packet, using the http_parser library.
+
+    Keyword arguments:
+        packet_data -- the data to be parsed
+        https       -- whether the packet is HTTPS instead of HTTP (default - False)
+
+    Returns:
+        http        -- a dictionary containing the request verb, the headers, the body and an observation;
+                       if the packet is HTTPS, only https-encoded and observation will be returned
+    """
     if len(packet_data) < 1:
         return None
     if https:
@@ -40,7 +51,15 @@ def parse_http(packet_data, https=False):
 
 
 def parse_tcp_packet(tcp_header):
-    # https://en.wikipedia.org/wiki/Transmission_Control_Protocol
+    """
+    Parses a TCP header according to the definition at https://en.wikipedia.org/wiki/Transmission_Control_Protocol.
+
+    Keyword arguments:
+        tcp_header  -- the packed header, which will be unpacked and parsed
+
+    Returns:
+        header      -- a dictionary containing all data extracted from the tcp header
+    """
     header = {}
     tcp_h = struct.unpack('! H H L L B B H H H', tcp_header[:20])
     header['source_port'] = tcp_h[0]
@@ -57,6 +76,15 @@ def parse_tcp_packet(tcp_header):
 
 
 def interpret_tcp_flags(part1, part2):
+    """
+    Interprets the flags in the TCP header.
+
+    Keyword arguments:
+        part1   -- the first bit of the flags segment
+        part2   -- the other 8 bits of the flags segment
+    Returns:
+        flags   -- an array containing all the set flags
+    """
     flags = []
     if part1 & 0b00000001:
         flags.append('NS (ECN-nonce - concealment protection)')
@@ -80,7 +108,15 @@ def interpret_tcp_flags(part1, part2):
 
 
 def parse_ipv4(ip_header):
-    # https://en.wikipedia.org/wiki/IPv4#Packet_structure
+    """
+    Parses an IPV4 header according to the definition at https://en.wikipedia.org/wiki/IPv4#Packet_structure.
+
+    Keyword arguments:
+        ip_header  -- the packed header, which will be unpacked and parsed
+
+    Returns:
+        header     -- a dictionary containing all data extracted from the IPV4 header
+    """
     header = {}
     ip_h = struct.unpack('! B B H H H B B H 4s 4s', ip_header[:20])
     header['ip_version'] = 4
@@ -102,6 +138,16 @@ def parse_ipv4(ip_header):
 
 
 def interpret_ipv4_flags(flags):
+    """
+    Checks if either the MF or DF flag is set in the IPV4 header.
+
+    Keyword arguments:
+        flags   -- the 3 bits representing the flags
+
+    Returns:
+        flag    -- MF if the least significant bit is set;
+                   DF if the second-least significant bit is set
+    """
     if flags == 1:
         return 'MF (More Fragments)'
     elif flags == 2:
@@ -109,7 +155,15 @@ def interpret_ipv4_flags(flags):
 
 
 def parse_ipv6(ip_header):
-    # https://en.wikipedia.org/wiki/IPv6_packet
+    """
+    Parses an IPV6 header according to the definition at https://en.wikipedia.org/wiki/IPv6_packet#Fixed_header.
+
+    Keyword arguments:
+        ip_header  -- the packed header, which will be unpacked and parsed
+
+    Returns:
+        header     -- a dictionary containing all data extracted from the IPV6 header
+    """
     header = {}
     data = struct.unpack('! L H B B 16s 16s', ip_header[:40])
     header['ip_version'] = 6
@@ -128,6 +182,15 @@ def parse_ipv6(ip_header):
 
 
 def parse_ip_header(ip_header):
+    """
+    Checks if the IP version is 4 or 6, and continues the parsing using the appropriate method.
+
+    Keyword arguments:
+        ip_header   -- the packed ip header
+
+    Returns:
+        header      -- returns the output of the IPV4/IPV6 parser, according to the IP version detected
+    """
     version = ip_header[0] >> 4
     if version == 4:
         return parse_ipv4(ip_header)
@@ -136,6 +199,15 @@ def parse_ip_header(ip_header):
 
 
 def parse_ethernet_frame(frame):
+    """
+    Parses an ethernet frame according to the definition at https://en.wikipedia.org/wiki/Ethernet_frame#Ethernet_II.
+
+    Keyword arguments:
+        frame   -- the packed frame, which will be unpacked and parsed
+
+    Returns:
+        eth     -- a dictionary containing all data extracted from the ethernet frame
+    """
     eth = {}
     destination_mac, source_mac, ether_type = struct.unpack('! 6s 6s H', frame[:14])
     eth['destination_mac_address'] = destination_mac.hex(':')
@@ -145,6 +217,16 @@ def parse_ethernet_frame(frame):
 
 
 def get_ipv(ether_type):
+    """
+    Returns the IP version using the ether type found in the ethernet frame,
+    according to https://en.wikipedia.org/wiki/EtherType#Values.
+
+    Keyword arguments:
+        ether_type  -- the ether type found in the ethernet frame
+
+    Returns:
+        ipv         -- 4 if ether_type is equal to the ipv4 hexadecimal, 6 if it is equal to the ipv6 one
+    """
     if ether_type == 0x0800:
         return 4
     elif ether_type == 0x86DD:
