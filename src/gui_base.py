@@ -35,6 +35,7 @@ class GUI:
     def __init__(self):
         """Initializes the sniffer thread, filter, colors, widgets and window, and then starts building the window."""
         # Sniffer Thread
+        self.STOP = True
         self.sniffer_thread = None
         # Filter
         self.filter = None
@@ -51,7 +52,10 @@ class GUI:
     def start(self):
         """Initializes the filter with default values and then starts the program with GUI."""
         gf.set_filter(self)
-        self.window.mainloop()
+        try:
+            self.window.mainloop()
+        except KeyboardInterrupt:
+            self.STOP = True
 
     def init_colors(self):
         """Initializes the color dictionary with preset values to be used throughout the interface."""
@@ -151,7 +155,7 @@ class GUI:
         self.widgets['control']['buttons']['exit'] = tk.Button(self.widgets['control']['frame'], text='Exit')
         self.widgets['control']['buttons']['exit'].grid(column=7, row=0, rowspan=2, padx=10, pady=10)
         self.widgets['control']['buttons']['exit'].config(command=lambda: self.window.destroy())
-        self.window.protocol("WM_DELETE_WINDOW", lambda: self.window.destroy())
+        self.window.protocol("WM_DELETE_WINDOW", lambda: self.safe_close())
 
         self.widgets['control']['frame'].grid(column=0, row=0, padx=3, ipadx=3, pady=5)
 
@@ -542,3 +546,7 @@ class GUI:
         self.widgets['preview']['json'].delete(1.0, tk.END)
         self.widgets['preview']['json'].insert(1.0, json.dumps(item, indent=2))
         self.widgets['preview']['json'].config(state='disabled')
+
+    def safe_close(self):
+        self.STOP = True
+        self.window.destroy()
